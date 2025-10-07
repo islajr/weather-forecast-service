@@ -19,7 +19,7 @@ public class CurrentWeather extends Weather {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @ManyToOne(optional = false)
+    @OneToOne(optional = false)
     @JoinColumn(nullable = false, name = "city_id")
     private City cityId;
 
