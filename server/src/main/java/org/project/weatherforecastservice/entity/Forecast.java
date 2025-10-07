@@ -23,9 +23,16 @@ public class Forecast extends Weather {
     private String id;
 
     @ManyToOne(optional = false)
+    @JoinColumn(nullable = false, name = "city_id")
     private City cityId;
+
+    @Column(nullable = false, name = "forecast_date")
     private LocalDate forecastDate;
+
+    @Column(nullable = false, name = "rain_volume")
     private double rainVolume;
+
+    @Column(nullable = false, name = "probability")
     private float probability;
 
     @CreationTimestamp
