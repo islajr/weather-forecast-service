@@ -9,6 +9,7 @@ public record CurrentWeatherResponse(
         String city,
         String country,
         LocalDateTime timestamp,
+        double temperature,
         int humidity,
         double windSpeed,
         int windDirection,
@@ -16,6 +17,7 @@ public record CurrentWeatherResponse(
         String conditions,
         String description,
         LocalDateTime sunrise,
-        LocalDateTime sunset
+        LocalDateTime sunset,
+        boolean isCached
 ) {
 }
