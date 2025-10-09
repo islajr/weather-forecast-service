@@ -33,4 +33,12 @@ public class City {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    public void incrementSearchCount() {
+        this.searchCount++;
+    }
+
+    public void updateLastSearched(LocalDateTime update) {
+        this.lastSearched = update;
+    }
 }
