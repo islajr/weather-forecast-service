@@ -1,5 +1,7 @@
 package org.project.weatherforecastservice.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +21,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Service
@@ -49,9 +52,29 @@ public class WeatherService {
     private final CurrentWeatherRepository currentWeatherRepository;
     private final RestTemplate restTemplate;
 
+    /* Caffeine Caches */
+    Cache<String, ResponseEntity<CurrentWeatherResponse>> currentWeatherCache = Caffeine.newBuilder()
+            .maximumSize(1000)
+            .expireAfterWrite(Duration.ofMinutes(15))
+            .build();
+
+    Cache<String, ResponseEntity<CurrentWeatherResponse>> weatherForecastCache = Caffeine.newBuilder()
+            .maximumSize(5000)
+            .expireAfterWrite(Duration.ofHours(1))
+            .build();
+
+    Cache<String, ResponseEntity<CurrentWeatherResponse>> citySearchCache = Caffeine.newBuilder()
+            .maximumSize(1000)
+            .expireAfterWrite(Duration.ofDays(1))
+            .build();
+
     public ResponseEntity<CurrentWeatherResponse> getCurrentWeather(String city, HttpServletRequest request) {
 
         // return cached response originally
+        ResponseEntity<CurrentWeatherResponse> cachedResponse = currentWeatherCache.getIfPresent(city);
+        if (cachedResponse != null) {
+            return cachedResponse;
+        }
 
         baseWeatherURL = baseWeatherURL.replace("{city}", city).replace("{apikey}", apiKey);
 
@@ -85,6 +108,9 @@ public class WeatherService {
                     ResponseEntity<CurrentWeatherResponse> response = ResponseEntity.ok(
                             currentResponse.getBody().generateResponse(currentResponse.getBody())
                     );
+
+                    log.info("Populating CurrentWeather cache for city - {}", city);
+                    currentWeatherCache.put(city, response);
 
                     log.info("Persisting city and Weather to db");
                     cityRepository.save(contextualCity);
