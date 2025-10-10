@@ -7,13 +7,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.project.weatherforecastservice.dto.response.CurrentWeatherResponse;
 import org.project.weatherforecastservice.dto.response.OpenWeatherCurrentResponse;
+import org.project.weatherforecastservice.dto.response.OpenWeatherForecastResponse;
 import org.project.weatherforecastservice.dto.response.WeatherForecastResponse;
 import org.project.weatherforecastservice.entity.City;
 import org.project.weatherforecastservice.entity.CurrentWeather;
+import org.project.weatherforecastservice.entity.Forecast;
 import org.project.weatherforecastservice.exception.exceptions.CityNotFoundException;
 import org.project.weatherforecastservice.exception.exceptions.FailedToGetWeatherException;
 import org.project.weatherforecastservice.repository.CityRepository;
 import org.project.weatherforecastservice.repository.CurrentWeatherRepository;
+import org.project.weatherforecastservice.repository.ForecastRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -50,6 +55,7 @@ public class WeatherService {
 
     private final CityRepository cityRepository;
     private final CurrentWeatherRepository currentWeatherRepository;
+    private final ForecastRepository forecastRepository;
     private final RestTemplate restTemplate;
 
     /* Caffeine Caches */
@@ -58,14 +64,9 @@ public class WeatherService {
             .expireAfterWrite(Duration.ofMinutes(15))
             .build();
 
-    Cache<String, ResponseEntity<CurrentWeatherResponse>> weatherForecastCache = Caffeine.newBuilder()
+    Cache<String, ResponseEntity<WeatherForecastResponse>> weatherForecastCache = Caffeine.newBuilder()
             .maximumSize(5000)
             .expireAfterWrite(Duration.ofHours(1))
-            .build();
-
-    Cache<String, ResponseEntity<CurrentWeatherResponse>> citySearchCache = Caffeine.newBuilder()
-            .maximumSize(1000)
-            .expireAfterWrite(Duration.ofDays(1))
             .build();
 
     public ResponseEntity<CurrentWeatherResponse> getCurrentWeather(String city, HttpServletRequest request) {
@@ -134,6 +135,73 @@ public class WeatherService {
     }
 
     public ResponseEntity<WeatherForecastResponse> getWeatherForecast(String city, HttpServletRequest request) {
-        return null;
+
+        // return cached response originally
+        ResponseEntity<WeatherForecastResponse> cachedResponse = weatherForecastCache.getIfPresent(city);
+        if (cachedResponse != null) {
+            return cachedResponse;
+        }
+
+        baseForecastURL = baseForecastURL.replace("{city}", city).replace("{apikey}", apiKey);
+
+        try {
+            log.info("Querying third-party API for weather forecast for city {}", city);
+            ResponseEntity<OpenWeatherForecastResponse> forecastResponse = restTemplate.getForEntity(baseForecastURL, OpenWeatherForecastResponse.class);
+
+            switch (forecastResponse.getStatusCode().toString()) {
+
+                case "200":
+                    City contextualCity = cityRepository.findCityByName(city).orElseGet(
+                            () -> {
+                                log.info("City not found: Creating new city with name - {}", city);
+                                assert forecastResponse.getBody() != null;
+                                return forecastResponse.getBody().extractCity(forecastResponse.getBody());
+                            }
+                    );
+
+                    log.info("Incrementing the search count for city - {}", city);
+                    contextualCity.incrementSearchCount();
+
+                    log.info("Updating the 'lastSearched' attribute for city - {}", city);
+                    contextualCity.updateLastSearched(LocalDateTime.now());
+
+                    log.info("Creating a new Weather Object for city - {}", city);
+                    assert forecastResponse.getBody() != null;
+
+                    List<Forecast> littleForecast = new ArrayList<>();
+                    for (int i = 0; i <= forecastResponse.getBody().cnt(); ++i) {
+                        Forecast forecast = forecastResponse.getBody().extractForecast(forecastResponse.getBody().list().get(i), forecastResponse.getBody().city());
+                        forecast.setCityId(contextualCity);
+                        littleForecast.add(forecast);
+                    }
+
+                    log.info("Generating a Client Response for city - {}", city);
+                    ResponseEntity<WeatherForecastResponse> response = ResponseEntity.ok(
+                            forecastResponse.getBody().generateResponse(forecastResponse.getBody())
+                    );
+
+                    log.info("Populating WeatherForecast cache for city - {}", city);
+                    weatherForecastCache.put(city, response);
+
+                    log.info("Persisting city and Forecast to db");
+                    cityRepository.save(contextualCity);
+                    forecastRepository.saveAll(littleForecast);
+                    littleForecast.clear();
+
+                    return response;
+
+                case "502":
+                    throw new FailedToGetWeatherException("Failed to get current weather for city: " + city);
+
+                case "404":
+                    throw new CityNotFoundException("Could not find City: " + city);
+
+                default:
+                    throw new RuntimeException("Failed to get current weather for city: " + city);
+            }
+
+        } catch(HttpClientErrorException | HttpServerErrorException ex) {
+            throw new RuntimeException("Something went wrong!");
+        }
     }
 }

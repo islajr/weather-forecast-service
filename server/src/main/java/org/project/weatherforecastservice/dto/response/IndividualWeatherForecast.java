@@ -2,11 +2,11 @@ package org.project.weatherforecastservice.dto.response;
 
 import lombok.Builder;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Builder
 public record IndividualWeatherForecast(
-        LocalDate date,
+        LocalDateTime date,
         double temperature,
         int humidity,
         double windSpeed,
