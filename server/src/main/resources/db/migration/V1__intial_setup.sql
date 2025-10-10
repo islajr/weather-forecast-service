@@ -33,7 +33,7 @@ CREATE TABLE forecast
 (
     id            VARCHAR(255)     NOT NULL,
     city_id       BIGINT           NOT NULL,
-    forecast_date date             NOT NULL,
+    forecast_date TIMESTAMP WITH TIME ZONE  NOT NULL,
     temperature DOUBLE PRECISION,
     wind_speed DOUBLE PRECISION,
     wind_direction INT,
