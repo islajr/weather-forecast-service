@@ -1,0 +1,13 @@
+package org.project.weatherforecastservice.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+public class WeatherMvcController {
+
+    @GetMapping("/home")
+    public String getCurrentWeather() {
+        return "home.html";
+    }
+}
