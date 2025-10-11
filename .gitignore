@@ -1,2 +1,6 @@
 ### Intellij ###
 .idea
+
+### Docker ###
+compose-dev.yml
+Dockerfile-dev
