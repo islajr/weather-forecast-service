@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
     }
 
     // 500 -- Fallback Exception Handler
-    @ExceptionHandler(value = CityNotFoundException.class)
+    @ExceptionHandler(value = RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex, HttpServletRequest request) {
         log.error(ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
