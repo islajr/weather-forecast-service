@@ -32,40 +32,42 @@ public record OpenWeatherCurrentResponse(
                 .longitude(response.coord.get("lon"))
                 .latitude(response.coord.get("lat"))
                 .country(response.sys.get("country"))
+                .searchCount(0L)
+                .lastSearched(null)
                 .build();
     }
 
     public CurrentWeather extractCurrentWeather(OpenWeatherCurrentResponse response) {
         return CurrentWeather.builder()
                 .temperature(response.main.get("temp"))
-                .weatherCondition(response.weather.get(1).get("main"))
-                .weatherDescription(response.weather.get(2).get("description"))
+                .weatherCondition(response.weather.get(0).get("main"))
+                .weatherDescription(response.weather.get(0).get("description"))
                 .timestamp(time(response.dt, response.timezone))
                 .humidity(Float.floatToIntBits(response.main.get("humidity")))
                 .pressure(Float.floatToIntBits(response.main.get("pressure")))
-                .sunrise(time(Long.getLong(response.sys.get("sunrise")), response.timezone))
-                .sunset(time(Long.getLong(response.sys.get("sunset")), response.timezone))
-                .windDirection(Float.floatToIntBits(response.wind.get("direction")))
+                .sunrise(time(Long.valueOf(response.sys.get("sunrise")), response.timezone))
+                .sunset(time(Long.valueOf(response.sys.get("sunset")), response.timezone))
+                .windDirection(Float.floatToIntBits(response.wind.get("deg")))
                 .windSpeed(Double.valueOf(response.wind.get("speed")))
                 .build();
     }
 
-    LocalDateTime time(Long dt, int tZ) {
+    static LocalDateTime time(Long dt, int tZ) {
         return TimeConverter.time(dt, tZ);
     }
 
-    public CurrentWeatherResponse generateResponse(OpenWeatherCurrentResponse response) {
+    public static CurrentWeatherResponse generateResponse(OpenWeatherCurrentResponse response) {
         return CurrentWeatherResponse.builder()
                 .city(response.name)
                 .temperature(response.main.get("temp"))
-                .conditions(response.weather.get(1).get("main"))
-                .description(response.weather.get(2).get("description"))
+                .conditions(response.weather.get(0).get("main"))
+                .description(response.weather.get(0).get("description"))
                 .timestamp(time(response.dt, response.timezone))
                 .humidity(Float.floatToIntBits(response.main.get("humidity")))
                 .pressure(Float.floatToIntBits(response.main.get("pressure")))
-                .sunrise(time(Long.getLong(response.sys.get("sunrise")), response.timezone))
-                .sunset(time(Long.getLong(response.sys.get("sunset")), response.timezone))
-                .windDirection(Float.floatToIntBits(response.wind.get("direction")))
+                .sunrise(time(Long.valueOf(response.sys.get("sunrise")), response.timezone))
+                .sunset(time(Long.valueOf(response.sys.get("sunset")), response.timezone))
+                .windDirection(Float.floatToIntBits(response.wind.get("deg")))
                 .windSpeed(Double.valueOf(response.wind.get("speed")))
                 .isCached(false)
                 .country(response.sys.get("country"))
