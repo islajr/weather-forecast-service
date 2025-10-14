@@ -66,6 +66,7 @@ public class WeatherService {
         // return cached response originally
         ResponseEntity<CurrentWeatherResponse> cachedResponse = currentWeatherCache.getIfPresent(city);
         if (cachedResponse != null) {
+            log.info("Weather Cache Hit: Returning cached value for city - {}", city);
             return cachedResponse;
         }
 
@@ -75,9 +76,9 @@ public class WeatherService {
             log.info("Querying third-party API for current weather for city {}", city);
             ResponseEntity<OpenWeatherCurrentResponse> currentResponse = restTemplate.getForEntity(baseWeatherURL, OpenWeatherCurrentResponse.class);
 
-            switch (currentResponse.getStatusCode().toString()) {
+            switch (currentResponse.getStatusCode().value()) {
 
-                case "200":
+                case 200:
                     City contextualCity = cityRepository.findCityByName(city).orElseGet(
                             () -> {
                                 log.info("City Not Found: Creating new city with name - {}", city);
@@ -111,10 +112,10 @@ public class WeatherService {
 
                     return response;
 
-                case "502":
+                case 502:
                     throw new FailedToGetWeatherException("Failed to get current weather for city: " + city);
 
-                case "404":
+                case 404:
                     throw new CityNotFoundException("Could not find City: " + city);
 
                 default:
