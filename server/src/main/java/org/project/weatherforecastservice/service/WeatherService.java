@@ -100,7 +100,7 @@ public class WeatherService {
 
                     log.info("Generating Client Response for city - {}", city);
                     ResponseEntity<CurrentWeatherResponse> response = ResponseEntity.ok(
-                            currentResponse.getBody().generateResponse(currentResponse.getBody())
+                            OpenWeatherCurrentResponse.generateResponse(currentResponse.getBody())
                     );
 
                     log.info("Populating CurrentWeather cache for city - {}", city);
