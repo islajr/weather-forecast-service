@@ -36,13 +36,13 @@ public class WeatherService {
      * Return the response [REST or SSG Document]
      * */
 
-    @Value("${openweathermap.api.weather.city.current}")
+    @Value("${third.party.api.weather.current}")
     private String baseWeatherURL;
 
-    @Value("${openweathermap.api.weather.city.forecast}")
+    @Value("${third.party.api.weather.forecast}")
     private String baseForecastURL;
 
-    @Value("${openweathermap.api.key}")
+    @Value("${third.party.api.key}")
     private String apiKey;
 
     private final CityRepository cityRepository;
@@ -70,7 +70,8 @@ public class WeatherService {
             return cachedResponse;
         }
 
-        baseWeatherURL = baseWeatherURL.replace("{city}", city).replace("{apikey}", apiKey);
+        baseWeatherURL = baseWeatherURL.replace("{city name}", city).replace("{API key}", apiKey);
+        log.info(baseWeatherURL);
 
         try {
             log.info("Querying third-party API for current weather for city {}", city);
@@ -136,7 +137,7 @@ public class WeatherService {
             return cachedResponse;
         }
 
-        baseForecastURL = baseForecastURL.replace("{city}", city).replace("{apikey}", apiKey);
+        baseForecastURL = baseForecastURL.replace("{city name}", city).replace("{API key}", apiKey);
 
         try {
             log.info("Querying third-party API for weather forecast for city {}", city);
