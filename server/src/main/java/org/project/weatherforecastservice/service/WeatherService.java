@@ -132,6 +132,7 @@ public class WeatherService {
         // return cached response originally
         ResponseEntity<WeatherForecastResponse> cachedResponse = weatherForecastCache.getIfPresent(city);
         if (cachedResponse != null) {
+            log.info("Forecast Cache Hit: Returning cached value for city - {}", city);
             return cachedResponse;
         }
 
@@ -141,9 +142,9 @@ public class WeatherService {
             log.info("Querying third-party API for weather forecast for city {}", city);
             ResponseEntity<OpenWeatherForecastResponse> forecastResponse = restTemplate.getForEntity(baseForecastURL, OpenWeatherForecastResponse.class);
 
-            switch (forecastResponse.getStatusCode().toString()) {
+            switch (forecastResponse.getStatusCode().value()) {
 
-                case "200":
+                case 200:
                     City contextualCity = cityRepository.findCityByName(city).orElseGet(
                             () -> {
                                 log.info("City not found: Creating new city with name - {}", city);
@@ -162,7 +163,7 @@ public class WeatherService {
                     assert forecastResponse.getBody() != null;
 
                     List<Forecast> littleForecast = new ArrayList<>();
-                    for (int i = 0; i <= forecastResponse.getBody().cnt(); ++i) {
+                    for (int i = 0; i < forecastResponse.getBody().cnt(); ++i) {
                         Forecast forecast = forecastResponse.getBody().extractForecast(forecastResponse.getBody().list().get(i), forecastResponse.getBody().city());
                         forecast.setCityId(contextualCity);
                         littleForecast.add(forecast);
@@ -170,7 +171,7 @@ public class WeatherService {
 
                     log.info("Generating a Client Response for city - {}", city);
                     ResponseEntity<WeatherForecastResponse> response = ResponseEntity.ok(
-                            forecastResponse.getBody().generateResponse(forecastResponse.getBody())
+                            OpenWeatherForecastResponse.generateResponse(forecastResponse.getBody())
                     );
 
                     log.info("Populating WeatherForecast cache for city - {}", city);
@@ -183,10 +184,10 @@ public class WeatherService {
 
                     return response;
 
-                case "502":
+                case 502:
                     throw new FailedToGetWeatherException("Failed to get current weather for city: " + city);
 
-                case "404":
+                case 404:
                     throw new CityNotFoundException("Could not find City: " + city);
 
                 default:
