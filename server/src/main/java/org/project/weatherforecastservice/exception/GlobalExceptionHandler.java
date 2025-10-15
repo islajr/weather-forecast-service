@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleFailedToGetWeatherException(FailedToGetWeatherException ex, HttpServletRequest request) {
         log.error(ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                .body(new ErrorResponse(HttpStatus.BAD_GATEWAY, ex.getMessage(), request, LocalDateTime.now()));
+                .body(new ErrorResponse(HttpStatus.BAD_GATEWAY, ex.getMessage(), request.getRequestURI(), LocalDateTime.now()));
     }
 
     // 405 -- Method Not Allowed
@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMethodNotAllowedException(MethodNotAllowedException ex, HttpServletRequest request) {
         log.error(ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                .body(new ErrorResponse(HttpStatus.METHOD_NOT_ALLOWED, ex.getMessage(), request, LocalDateTime.now()));
+                .body(new ErrorResponse(HttpStatus.METHOD_NOT_ALLOWED, ex.getMessage(), request.getRequestURI(), LocalDateTime.now()));
     }
 
     // 404 -- City Not Found
@@ -40,15 +40,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleCityNotFoundException(CityNotFoundException ex, HttpServletRequest request) {
         log.error(ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request, LocalDateTime.now()));
+                .body(new ErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI(), LocalDateTime.now()));
     }
 
-    // 400 -- No Resource Found
+    // 404 -- No Resource Found
     @ExceptionHandler(value = NoResourceFoundException.class)
     public ResponseEntity<ErrorResponse> handleNoResourceFoundException(NoResourceFoundException ex, HttpServletRequest request) {
         log.error(ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request, LocalDateTime.now()));
+                .body(new ErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI(), LocalDateTime.now()));
     }
 
     // 500 -- Fallback Exception Handler
@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex, HttpServletRequest request) {
         log.error(ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request, LocalDateTime.now()));
+                .body(new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request.getRequestURI(), LocalDateTime.now()));
     }
 
 }

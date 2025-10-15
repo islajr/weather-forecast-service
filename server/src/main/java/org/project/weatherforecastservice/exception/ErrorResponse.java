@@ -1,23 +1,28 @@
 package org.project.weatherforecastservice.exception;
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 
-public class ErrorResponse {
+public record ErrorResponse(
 
-    private final HttpStatus httpStatus;
-    private final String error;
-    private final String message;
-    private final String path;
-    private final LocalDateTime timestamp;
+    int httpStatus,
+    String error,
+    String message,
+    String path,
+    LocalDateTime timestamp
 
-    public ErrorResponse(HttpStatus status, String message, HttpServletRequest request, LocalDateTime timestamp) {
-        this.httpStatus = status;
-        this.error = httpStatus.getReasonPhrase();
+) {
+
+    public ErrorResponse(int httpStatus, String error, String message, String path, LocalDateTime timestamp) {
+        this.httpStatus = httpStatus;
+        this.error = error;
         this.message = message;
-        this.path = request.getRequestURI();
+        this.path = path;
         this.timestamp = timestamp;
+    }
+
+    public ErrorResponse(HttpStatus httpStatus, String message, String path, LocalDateTime timestamp) {
+        this(httpStatus.value(), httpStatus.getReasonPhrase(), message, path, timestamp);
     }
 }
