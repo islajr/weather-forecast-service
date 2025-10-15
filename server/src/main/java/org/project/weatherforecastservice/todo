@@ -1,0 +1,11 @@
+TODO: 15-10-2025
+- group forecast units and tie them to separate entity for batch-fetching and monitoring
+- fix error that occurs when subsequent requests are sent to either endpoint
+    - race condition between setting new city id and linking that to the new weather object before persisting
+- change isCached switch to 'true' before caching
+- refactor caching to utilize spring's caching mechanism
+
+- work on scheduled tasks
+- build UI for client interaction
+- more backend ops stuff
+- README generation
