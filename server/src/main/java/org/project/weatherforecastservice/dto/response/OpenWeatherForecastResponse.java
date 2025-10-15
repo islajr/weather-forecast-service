@@ -24,6 +24,8 @@ public record OpenWeatherForecastResponse(
                 .longitude(response.city.coord().get("lon"))
                 .latitude(response.city.coord().get("lat"))
                 .country(response.city.country())
+                .searchCount(0L)
+                .lastSearched(null)
                 .build();
     }
 
@@ -42,13 +44,13 @@ public record OpenWeatherForecastResponse(
                 .build();
     }
 
-    public WeatherForecastResponse generateResponse(OpenWeatherForecastResponse response) {
+    public static WeatherForecastResponse generateResponse(OpenWeatherForecastResponse response) {
         return WeatherForecastResponse.builder()
                 .city(response.city.name())
                 .country(response.city.country())
                 .forecasts(response.list.stream()
                         .map(forecast -> IndividualWeatherForecast.builder()
-                                .date(time(forecast.dt(), city.timeZone()))
+                                .date(time(forecast.dt(), response.city.timeZone()))
                                 .description(forecast.weather().get(0).get("description"))
                                 .conditions(forecast.weather().get(0).get("conditions"))
                                 .temperature(forecast.main().get("temp"))
@@ -61,7 +63,7 @@ public record OpenWeatherForecastResponse(
                 .build();
     }
 
-    LocalDateTime time(long dt, int tZ) {
+    static LocalDateTime time(long dt, int tZ) {
         return TimeConverter.time(dt, tZ);
     }
 }
