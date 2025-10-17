@@ -17,7 +17,6 @@ public record CurrentWeatherResponse(
         String conditions,
         String description,
         LocalDateTime sunrise,
-        LocalDateTime sunset,
-        boolean isCached
+        LocalDateTime sunset
 ) {
 }

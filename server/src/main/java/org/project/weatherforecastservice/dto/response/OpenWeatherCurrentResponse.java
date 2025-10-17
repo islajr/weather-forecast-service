@@ -69,7 +69,6 @@ public record OpenWeatherCurrentResponse(
                 .sunset(time(Long.valueOf(response.sys.get("sunset")), response.timezone))
                 .windDirection(Float.floatToIntBits(response.wind.get("deg")))
                 .windSpeed(Double.valueOf(response.wind.get("speed")))
-                .isCached(false)
                 .country(response.sys.get("country"))
                 .build();
     }
