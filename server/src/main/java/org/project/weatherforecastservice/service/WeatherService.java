@@ -94,10 +94,16 @@ public class WeatherService {
                     log.info("Updating 'lastSearched' attribute for city - {}", city);
                     contextualCity.updateLastSearched(LocalDateTime.now());
 
-                    log.info("Creating new Weather Object for city - {}", city);
-                    assert currentResponse.getBody() != null;
-                    CurrentWeather weather = currentResponse.getBody().extractCurrentWeather(currentResponse.getBody());
-                    weather.setCityId(contextualCity);
+                    if (contextualWeather != null) {    // if a current weather entry already exists
+                        log.info("Current Weather already exists for contextual city. Performing exchange");
+                        contextualWeather = OpenWeatherCurrentResponse.exchange(contextualWeather, currentResponse.getBody());
+
+                    } else {    // otherwise
+                        log.info("Creating new Weather Object for city - {}", city);
+                        assert currentResponse.getBody() != null;
+                        contextualWeather = currentResponse.getBody().extractCurrentWeather(currentResponse.getBody());
+                        contextualWeather.setCityId(contextualCity);
+                    }
 
                     log.info("Generating Client Response for city - {}", city);
                     ResponseEntity<CurrentWeatherResponse> response = ResponseEntity.ok(

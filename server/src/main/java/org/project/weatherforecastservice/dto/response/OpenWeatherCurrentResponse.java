@@ -72,4 +72,19 @@ public record OpenWeatherCurrentResponse(
                 .country(response.sys.get("country"))
                 .build();
     }
+
+    public static CurrentWeather exchange(CurrentWeather weather, OpenWeatherCurrentResponse response) {
+                weather.setTemperature(response.main.get("temp"));
+                weather.setWeatherCondition(response.weather.get(0).get("main"));
+                weather.setWeatherDescription(response.weather.get(0).get("description"));
+                weather.setTimestamp(time(response.dt, response.timezone));
+                weather.setHumidity(Float.floatToIntBits(response.main.get("humidity")));
+                weather.setPressure(Float.floatToIntBits(response.main.get("pressure")));
+                weather.setSunrise(time(Long.valueOf(response.sys.get("sunrise")), response.timezone));
+                weather.setSunset(time(Long.valueOf(response.sys.get("sunset")), response.timezone));
+                weather.setWindDirection(Float.floatToIntBits(response.wind.get("deg")));
+                weather.setWindSpeed(Double.valueOf(response.wind.get("speed")));
+                
+                return weather;
+    }
 }
