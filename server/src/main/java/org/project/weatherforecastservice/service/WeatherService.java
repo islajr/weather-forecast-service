@@ -90,11 +90,11 @@ public class WeatherService {
                 case 200:
                     log.info("Querying database for possible stored city and weather information");
                     CurrentWeather contextualWeather = currentWeatherRepository.findCurrentWeatherByCityIdName(capitalizeString(city));
-                    City contextualCity;
+                    City contextualCity = cityRepository.findCityByName(capitalizeString(city));
 
-                    if (contextualWeather == null) {
+                    if (contextualCity == null) {   // no registered city with said name
 
-                        log.info("No saved weather found. Creating new city entity to host weather data");
+                        log.info("No such city found. Creating new city entity to host weather data");
                         assert currentResponse.getBody() != null;
                         contextualCity = currentResponse.getBody().extractCity(currentResponse.getBody());
 
@@ -105,8 +105,6 @@ public class WeatherService {
 
                         log.info("Returning saved city for further operation");
                         contextualCity = cityRepository.findCityByName(contextualCity.getName());
-                    } else {
-                        contextualCity = contextualWeather.getCityId();
                     }
 
                     log.info("Incrementing search count for city - {}", city);
