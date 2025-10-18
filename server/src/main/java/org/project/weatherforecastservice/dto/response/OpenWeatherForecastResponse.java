@@ -52,7 +52,7 @@ public record OpenWeatherForecastResponse(
                         .map(forecast -> IndividualWeatherForecast.builder()
                                 .date(time(forecast.dt(), response.city.timeZone()))
                                 .description(forecast.weather().get(0).get("description"))
-                                .conditions(forecast.weather().get(0).get("conditions"))
+                                .conditions(forecast.weather().get(0).get("main"))
                                 .temperature(forecast.main().get("temp"))
                                 .humidity(Float.floatToIntBits(forecast.main().get("humidity")))
                                 .windSpeed(Float.floatToIntBits(forecast.wind().get("speed")))

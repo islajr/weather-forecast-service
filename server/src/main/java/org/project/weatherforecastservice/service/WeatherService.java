@@ -1,10 +1,8 @@
 package org.project.weatherforecastservice.service;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 import org.project.weatherforecastservice.dto.response.CurrentWeatherResponse;
 import org.project.weatherforecastservice.dto.response.OpenWeatherCurrentResponse;
 import org.project.weatherforecastservice.dto.response.OpenWeatherForecastResponse;
@@ -17,6 +15,7 @@ import org.project.weatherforecastservice.exception.exceptions.FailedToGetWeathe
 import org.project.weatherforecastservice.repository.CityRepository;
 import org.project.weatherforecastservice.repository.CurrentWeatherRepository;
 import org.project.weatherforecastservice.repository.ForecastRepository;
+import static org.project.weatherforecastservice.util.StringConverter.capitalizeString;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -24,12 +23,12 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
-import static org.project.weatherforecastservice.util.StringConverter.capitalizeString;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -165,22 +164,37 @@ public class WeatherService {
             return cachedResponse;
         }
 
-        baseForecastURL = baseForecastURL.replace("{city name}", city).replace("{API key}", apiKey);
+        String finalURL = baseForecastURL.replace("{city name}", capitalizeString(city)).replace("{API key}", apiKey);
 
         try {
             log.info("Querying third-party API for weather forecast for city {}", city);
-            ResponseEntity<OpenWeatherForecastResponse> forecastResponse = restTemplate.getForEntity(baseForecastURL, OpenWeatherForecastResponse.class);
+            ResponseEntity<OpenWeatherForecastResponse> forecastResponse = restTemplate.getForEntity(finalURL, OpenWeatherForecastResponse.class);
 
             switch (forecastResponse.getStatusCode().value()) {
 
                 case 200:
-                    City contextualCity = cityRepository.findCityByName(city).orElseGet(
-                            () -> {
-                                log.info("City not found: Creating new city with name - {}", city);
-                                assert forecastResponse.getBody() != null;
-                                return forecastResponse.getBody().extractCity(forecastResponse.getBody());
-                            }
-                    );
+                    log.info("Querying database for possible stored city and forecast information");
+                    boolean forecastExists  = forecastRepository.existsByCityName(capitalizeString(city));
+                    City contextualCity;
+
+                    if (!forecastExists) {  // no forecast exists for provided city
+
+                        log.info("No saved forecast found. Creating new city entity to host weather data");
+                        assert forecastResponse.getBody() != null;
+                        contextualCity = forecastResponse.getBody().extractCity(forecastResponse.getBody());
+
+                        log.info("Persisting the new city to db for id generation");
+                        log.info("name: {}, id: {}, country: {}, lon: {}, lat: {}",
+                                contextualCity.getName(), contextualCity.getId(), contextualCity.getCountry(), contextualCity.getLongitude(), contextualCity.getLatitude());
+                        cityRepository.save(contextualCity);
+
+                        log.info("Returning just-saved city for further operation");
+                        contextualCity = cityRepository.findCityByName(contextualCity.getName());
+
+                    } else {    // forecast exists for provided city name
+                        log.info("Obtaining city object from saved forecast");
+                        contextualCity = forecastRepository.findFirstByCityName(capitalizeString(city)).getCity();
+                    }
 
                     log.info("Incrementing the search count for city - {}", city);
                     contextualCity.incrementSearchCount();
@@ -188,14 +202,13 @@ public class WeatherService {
                     log.info("Updating the 'lastSearched' attribute for city - {}", city);
                     contextualCity.updateLastSearched(LocalDateTime.now());
 
-                    log.info("Creating a new Weather Object for city - {}", city);
+                    log.info("Creating and saving new forecast objects for city - {}", city);
                     assert forecastResponse.getBody() != null;
 
-                    List<Forecast> littleForecast = new ArrayList<>();
                     for (int i = 0; i < forecastResponse.getBody().cnt(); ++i) {
                         Forecast forecast = forecastResponse.getBody().extractForecast(forecastResponse.getBody().list().get(i), forecastResponse.getBody().city());
-                        forecast.setCityId(contextualCity);
-                        littleForecast.add(forecast);
+                        forecast.setCity(contextualCity);
+                        forecastRepository.save(forecast);
                     }
 
                     log.info("Generating a Client Response for city - {}", city);
@@ -206,10 +219,8 @@ public class WeatherService {
                     log.info("Populating WeatherForecast cache for city - {}", city);
                     weatherForecastCache.put(city, response);
 
-                    log.info("Persisting city and Forecast to db");
+                    log.info("Persisting city to db");
                     cityRepository.save(contextualCity);
-                    forecastRepository.saveAll(littleForecast);
-                    littleForecast.clear();
 
                     return response;
 

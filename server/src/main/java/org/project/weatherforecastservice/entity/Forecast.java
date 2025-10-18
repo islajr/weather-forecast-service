@@ -21,7 +21,7 @@ public class Forecast extends Weather {
 
     @ManyToOne(optional = false)
     @JoinColumn(nullable = false, name = "city_id")
-    private City cityId;
+    private City city;
 
     @Column(nullable = false, name = "temperature")
     private double temperature; // deg celsius
