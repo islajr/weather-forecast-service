@@ -1,20 +1,8 @@
-# TODO: 17-10-2025
+# TODO: 18-10-2025
 
-- group forecast units and tie them to separate entity for batch-fetching and monitoring
-  - new entity called forecast group that basically holds a list of forecasts through a oneToMany relationship
-  - this forecast group entity is then linked to the entity
-  - same steps for swapping out values on subsequent requests to same city value below applies
-- fix error that occurs when subsequent requests are sent to either endpoint
-  - race condition between setting new city id and linking that to the new weather object before persisting
-    - what if only one current weather and forecast object need to exist for a city? it makes sense
-      - this would mean that on each request made to the third-party api, the persisted data would have to be swapped out.
-        - how? fetch weather insted of city. will result in a 1 + 1 call, but is acceptable
-        - design a utility method for capitalizing the first letter of a string
-        - search for provided city name in weather entity
-        - upon miss, query third-party api and persist both new city and weather entities
-        - upon hit, carry about value exchange through a pre-designed method and persist both city and weather element
-- change isCached switch to 'true' before caching
-  - modify isCached switch right after persisting and before caching (order has to be changed in-code to actualize this)
+- properly swap out forecast values upon subsequent db calls
+- fix bug that doesn't account for shared states between current and forecast.
+  - ensure to check if city exists on both fronts.
 - carry out proper type conversions when returning values to client
   - 2 dp floating point values should be returned where appropriate
 - refactor caching to utilize spring's caching mechanism
