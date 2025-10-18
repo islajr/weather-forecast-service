@@ -8,8 +8,7 @@ import java.util.List;
 
 @Repository
 public interface ForecastRepository extends JpaRepository<Forecast, String> {
-    List<Forecast> findForecastByCityName(String cityName);
-    Forecast findFirstByCityName(String cityName);
+    List<Forecast> findForecastsByCityName(String cityName);
 
     boolean existsByCityName(String cityName);
 }

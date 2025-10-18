@@ -2,6 +2,7 @@ package org.project.weatherforecastservice.service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.project.weatherforecastservice.dto.response.CurrentWeatherResponse;
 import org.project.weatherforecastservice.dto.response.OpenWeatherCurrentResponse;
@@ -162,7 +163,8 @@ public class WeatherService {
             return cachedResponse;
         }
 
-        String finalURL = baseForecastURL.replace("{city name}", capitalizeString(city)).replace("{API key}", apiKey);
+        city = capitalizeString(city);
+        String finalURL = baseForecastURL.replace("{city name}", city).replace("{API key}", apiKey);
 
         try {
             log.info("Querying third-party API for weather forecast for city {}", city);
@@ -172,12 +174,12 @@ public class WeatherService {
 
                 case 200:
                     log.info("Querying database for possible stored city and forecast information");
-                    boolean forecastExists  = forecastRepository.existsByCityName(capitalizeString(city));
-                    City contextualCity;
+                    boolean forecastExists  = forecastRepository.existsByCityName(city);
+                    City contextualCity = cityRepository.findCityByName(city);
 
-                    if (!forecastExists) {  // no forecast exists for provided city
+                    if (contextualCity == null) {  // no city exists with said name
 
-                        log.info("No saved forecast found. Creating new city entity to host weather data");
+                        log.info("No such city found. Creating new city entity to host forecast data");
                         assert forecastResponse.getBody() != null;
                         contextualCity = forecastResponse.getBody().extractCity(forecastResponse.getBody());
 
@@ -189,9 +191,6 @@ public class WeatherService {
                         log.info("Returning just-saved city for further operation");
                         contextualCity = cityRepository.findCityByName(contextualCity.getName());
 
-                    } else {    // forecast exists for provided city name
-                        log.info("Obtaining city object from saved forecast");
-                        contextualCity = forecastRepository.findFirstByCityName(capitalizeString(city)).getCity();
                     }
 
                     log.info("Incrementing the search count for city - {}", city);
@@ -200,13 +199,23 @@ public class WeatherService {
                     log.info("Updating the 'lastSearched' attribute for city - {}", city);
                     contextualCity.updateLastSearched(LocalDateTime.now());
 
-                    log.info("Creating and saving new forecast objects for city - {}", city);
-                    assert forecastResponse.getBody() != null;
+                    if (forecastExists) {   // existing forecast is found for city
+                        log.info("Forecast data found for city - {}. Performing exchange", city);
+                        assert forecastResponse.getBody() != null;
+                        List<Forecast> existingForecast = forecastRepository.findForecastsByCityName(city);
+                        existingForecast = forecastResponse.getBody().exchange(forecastResponse.getBody(), existingForecast);
 
-                    for (int i = 0; i < forecastResponse.getBody().cnt(); ++i) {
-                        Forecast forecast = forecastResponse.getBody().extractForecast(forecastResponse.getBody().list().get(i), forecastResponse.getBody().city());
-                        forecast.setCity(contextualCity);
-                        forecastRepository.save(forecast);
+                        log.info("Persisting freshly exchanged forecasts for city - {}", city);
+                        forecastRepository.saveAll(existingForecast);
+
+                    } else {    // forecast not found for city
+                        log.info("Creating and saving new forecast objects for city - {}", city);
+                        assert forecastResponse.getBody() != null;
+                        for (int i = 0; i < forecastResponse.getBody().cnt(); ++i) {
+                            Forecast forecast = forecastResponse.getBody().extractForecast(forecastResponse.getBody().list().get(i), forecastResponse.getBody().city());
+                            forecast.setCity(contextualCity);
+                            forecastRepository.save(forecast);
+                        }
                     }
 
                     log.info("Generating a Client Response for city - {}", city);

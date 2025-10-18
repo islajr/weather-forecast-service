@@ -1,13 +1,16 @@
 package org.project.weatherforecastservice.dto.response;
 
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 import org.project.weatherforecastservice.entity.City;
 import org.project.weatherforecastservice.entity.Forecast;
 import org.project.weatherforecastservice.util.TimeConverter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Builder
 public record OpenWeatherForecastResponse(
     String cod,
@@ -42,6 +45,28 @@ public record OpenWeatherForecastResponse(
                 .windDirection(Float.floatToIntBits(forecast.wind().get("speed")))
                 .windSpeed(Float.floatToIntBits(forecast.wind().get("deg")))
                 .build();
+    }
+
+    public List<Forecast> exchange(OpenWeatherForecastResponse response, List<Forecast> oldForecast) {
+        List<Forecast> newForecast = new ArrayList<>();
+
+        // populating the new forecasts with existing conversion implementation
+        for (OpenWeatherForecastWeather weather : response.list) {
+            newForecast.add(extractForecast(weather, response.city));
+        }
+
+        // swapping out the values and fallback conditions
+        if (newForecast.size() == oldForecast.size()) {
+            for (int i = 0; i < newForecast.size(); i++) {
+                oldForecast.set(i, newForecast.get(i));
+            }
+            log.info("Successfully swapped out old forecast data");
+        } else {
+            log.warn("Error exchanging forecasts: new and old forecasts are of varying length");
+            throw new RuntimeException("Failed to exchange forecasts - Varying length Exception");
+        }
+
+        return oldForecast;
     }
 
     public static WeatherForecastResponse generateResponse(OpenWeatherForecastResponse response) {
