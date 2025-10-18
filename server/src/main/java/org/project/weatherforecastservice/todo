@@ -1,8 +1,6 @@
 # TODO: 18-10-2025
 
-- properly swap out forecast values upon subsequent db calls
-- fix bug that doesn't account for shared states between current and forecast.
-  - ensure to check if city exists on both fronts.
+- what happens when the third-party server is down or unresponsive?
 - carry out proper type conversions when returning values to client
   - 2 dp floating point values should be returned where appropriate
 - refactor caching to utilize spring's caching mechanism
