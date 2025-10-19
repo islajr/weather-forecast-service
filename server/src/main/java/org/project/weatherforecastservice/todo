@@ -1,8 +1,8 @@
-# TODO: 18-10-2025
+# TODO: 19-10-2025
 
-- what happens when the third-party server is down or unresponsive?
 - carry out proper type conversions when returning values to client
   - 2 dp floating point values should be returned where appropriate
+- write proper tests
 - refactor caching to utilize spring's caching mechanism
   - study and configure spring cache for use to ensure profesionality and best-practices
 - work on scheduled tasks
