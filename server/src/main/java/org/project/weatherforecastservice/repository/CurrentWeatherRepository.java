@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface CurrentWeatherRepository extends JpaRepository<CurrentWeather, String> {
 
     CurrentWeather findCurrentWeatherByCityIdName(String cityIdName);
+
+    boolean existsCurrentWeatherByCityIdName(String cityIdName);
 }

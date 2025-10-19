@@ -73,6 +73,7 @@ public class WeatherService {
 
     public ResponseEntity<CurrentWeatherResponse> getCurrentWeather(String city, HttpServletRequest request) {
 
+        city = capitalizeString(city);
         // return cached response originally
         ResponseEntity<CurrentWeatherResponse> cachedResponse = currentWeatherCache.getIfPresent(city);
         if (cachedResponse != null) {
@@ -90,8 +91,8 @@ public class WeatherService {
 
                 case 200:
                     log.info("Querying database for possible stored city and weather information");
-                    CurrentWeather contextualWeather = currentWeatherRepository.findCurrentWeatherByCityIdName(capitalizeString(city));
-                    City contextualCity = cityRepository.findCityByName(capitalizeString(city));
+                    CurrentWeather contextualWeather = currentWeatherRepository.findCurrentWeatherByCityIdName(city);
+                    City contextualCity = cityRepository.findCityByName(city);
 
                     if (contextualCity == null) {   // no registered city with said name
 
@@ -140,7 +141,27 @@ public class WeatherService {
                     return response;
 
                 case 502:
-                    throw new FailedToGetWeatherException("Failed to get current weather for city: " + city);
+                    log.info("Querying db for possible stored city and weather information");
+                    boolean weatherExists  = currentWeatherRepository.existsCurrentWeatherByCityIdName(city);
+                    City contextualCity1 = cityRepository.findCityByName(city);
+
+                    if ((contextualCity1 != null) && (weatherExists)) {
+                        log.info("Weather data found for city - {}. Performing further ops", city);
+                        CurrentWeather existingWeather = currentWeatherRepository.findCurrentWeatherByCityIdName(city);
+
+                        log.info("Incrementing the search count for city - {}", city);
+                        contextualCity1.incrementSearchCount();
+
+                        log.info("Updating the 'lastSearched' attribute for city - {}", city);
+                        contextualCity1.updateLastSearched(LocalDateTime.now());
+
+                        cityRepository.save(contextualCity1);
+
+                        return ResponseEntity.ok(CurrentWeatherResponse.generateRawResponse(existingWeather, contextualCity1));
+
+                    } else {
+                        throw new FailedToGetWeatherException("Failed to get current weather for city: " + city);
+                    }
 
                 case 404:
                     throw new CityNotFoundException("Could not find City: " + city);
@@ -232,7 +253,27 @@ public class WeatherService {
                     return response;
 
                 case 502:
-                    throw new FailedToGetWeatherException("Failed to get current weather for city: " + city);
+                    log.info("Querying db for possible stored city and forecast information");
+                    boolean forecastExist  = forecastRepository.existsByCityName(city);
+                    City contextualCity1 = cityRepository.findCityByName(city);
+
+                    if ((contextualCity1 != null) && (forecastExist)) {
+                        log.info("Forecast data found for city - {}. Performing further ops", city);
+                        List<Forecast> existingForecast = forecastRepository.findForecastsByCityName(city);
+
+                        log.info("Incrementing the search count for city - {}", city);
+                        contextualCity1.incrementSearchCount();
+
+                        log.info("Updating the 'lastSearched' attribute for city - {}", city);
+                        contextualCity1.updateLastSearched(LocalDateTime.now());
+
+                        cityRepository.save(contextualCity1);
+
+                        return ResponseEntity.ok(WeatherForecastResponse.generateRawResponse(existingForecast, contextualCity1));
+
+                    } else {
+                        throw new FailedToGetWeatherException("Failed to get current weather for city: " + city);
+                    }
 
                 case 404:
                     throw new CityNotFoundException("Could not find City: " + city);
