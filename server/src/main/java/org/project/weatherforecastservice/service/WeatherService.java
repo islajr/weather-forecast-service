@@ -28,6 +28,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -71,6 +72,7 @@ public class WeatherService {
             .expireAfterWrite(Duration.ofHours(1))
             .build();
 
+    @Transactional        
     public ResponseEntity<CurrentWeatherResponse> getCurrentWeather(String city, HttpServletRequest request) {
 
         city = capitalizeString(city);
@@ -175,6 +177,7 @@ public class WeatherService {
         }
     }
 
+    @Transactional
     public ResponseEntity<WeatherForecastResponse> getWeatherForecast(String city, HttpServletRequest request) {
 
         // return cached response originally
@@ -224,7 +227,7 @@ public class WeatherService {
                         log.info("Forecast data found for city - {}. Performing exchange", city);
                         assert forecastResponse.getBody() != null;
                         List<Forecast> existingForecast = forecastRepository.findForecastsByCityName(city);
-                        existingForecast = forecastResponse.getBody().exchange(forecastResponse.getBody(), existingForecast);
+                        existingForecast = forecastResponse.getBody().exchange(forecastResponse.getBody(), existingForecast, contextualCity);
 
                         log.info("Persisting freshly exchanged forecasts for city - {}", city);
                         forecastRepository.saveAll(existingForecast);
