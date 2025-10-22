@@ -7,20 +7,18 @@ const inputField = document.querySelector(".input-field");
 let action = "";
 
 /* necessary methods */
-async function getData(action, city) {
-    let response = ""
+function getData(action, city) {
+
     try {
         action === "currentWeather" ?
-            response = await fetch(`http://localhost:8080/api/weather/current?city=${city}`) :
-            response = await fetch(`http://localhost:8080/api/weather/forecast?city=${city}`);
+            window.location.href = `/weather?city=${city}` :
+            window.location.href = `/forecast?city=${city}`
 
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
-        const data = await response.json();
 
-        console.log("Fetched data: ", data);
     } catch (error) {
         console.error("Failed to fetch data: ", error);
     }

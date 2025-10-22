@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>WFS | Weather Information</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+  <header>
+    <h1>Weather Forecast Service</h1>
+  </header>
+  <main>
+    <div class="main-container">
+      <h3 id="main-header"></h3>
+      <div class="weather-buttons">
+        <button type="submit" id="current-weather-button">Current Weather</button>
+        <button type="submit" id="forecast-button">Forecast</button>
+      </div>
+      <div id="display-section">
+        <input type="text" name="city" id="" class="input-field" placeholder="What city are you interested in?">
+        <button type="submit" id="fetch-results">Fetch</button>
+      </div>
+    </div>
+  </main>
+  <script th:src="@{/js/script.js}"></script>
+</body>
+</html>
