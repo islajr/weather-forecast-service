@@ -26,6 +26,7 @@ public class WeatherMvcController {
     public String getCurrentWeather(@RequestParam("city") String city, Model model, HttpServletRequest request) {
 
         model.addAttribute("city", city);
+        model.addAttribute("type", "currentWeather");
         model.addAttribute("response", Objects.requireNonNull(weatherService.getCurrentWeather(city, request).getBody()));
         return "weather";
     }
@@ -33,6 +34,7 @@ public class WeatherMvcController {
     @GetMapping("/forecast")
     public String getForecast(@RequestParam("city") String city, Model model, HttpServletRequest request) {
         model.addAttribute("city", city);
+        model.addAttribute("type", "forecast");
         model.addAttribute("response", Objects.requireNonNull(weatherService.getWeatherForecast(city, request).getBody()));
 
         return "weather";
