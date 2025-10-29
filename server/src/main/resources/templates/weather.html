@@ -11,15 +11,34 @@
   </header>
   <main>
     <div class="main-container">
-      <h3 id="main-header"></h3>
-      <div class="weather-buttons">
-        <button type="submit" id="current-weather-button">Current Weather</button>
-        <button type="submit" id="forecast-button">Forecast</button>
-      </div>
-      <div id="display-section">
-        <input type="text" name="city" id="" class="input-field" placeholder="What city are you interested in?">
-        <button type="submit" id="fetch-results">Fetch</button>
-      </div>
+      <h2 id="main-header" th:if="${type == 'currentWeather'}">Current Weather Information</h2>
+      <h2 id="main-header" th:if="${type == 'forecast'}">Weather Forecast Information</h2>
+
+      <section id="weather-information" th:if="${type == 'currentWeather'}">
+        <div class="weather-information-container">
+          <div class="city-information">
+            <p><strong class="city-information-text">City: </strong></p><p class="city-information-text" th:text="${response.city}">City</p>
+            <p><strong class="city-information-text">Country: </strong></p><p class="city-information-text" th:text="${response.country}">Country: </p>
+          </div>
+          <div class="weather-information">
+            <p th:text="${response.temperature}">Temperature: </p>
+            <p th:tet="${response.humidity}">Humidity: </p>
+            <p th:text="${response.timestamp}">Timestamp: </p>
+            <p th:text="${response.windSpeed}">Wind Speed: </p>
+            <p th:text="${response.windDirection}">Wind Direction: </p>
+            <p th:text="${response.pressure}">Pressure: </p>
+            <p th:text="${response.conditions}">Weather Condition: </p>
+            <p th:text="${response.description}">Weather Description: </p>
+            <p th:text="${response.sunrise}">Sunrise: </p>
+            <p th:text="${response.sunset}">Sunset: </p>
+          </div>
+        </div>
+      </section>
+      <section id="weather-information" th:if="${type == 'forecast'}">
+        <div class="weather-information-container">
+          
+        </div>
+      </section>
     </div>
   </main>
   <script th:src="@{/js/script.js}"></script>
