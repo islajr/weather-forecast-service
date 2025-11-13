@@ -36,7 +36,28 @@
       </section>
       <section id="weather-information" th:if="${type == 'forecast'}">
         <div class="weather-information-container">
-          
+          <div class="city-information">
+            <p><strong class="city-information-text">City: </strong></p><p class="city-information-text" th:text="${response.city}">City</p>
+            <p><strong class="city-information-text">Country: </strong></p><p class="city-information-text" th:text="${response.country}">Country: </p>
+          </div>
+          <div class="weather-information">
+            <p th:text="${response.temperature}">Temperature: </p>
+            <p th:tet="${response.humidity}">Humidity: </p>
+            <p th:text="${response.timestamp}">Timestamp: </p>
+            <p th:text="${response.windSpeed}">Wind Speed: </p>
+            <p th:text="${response.windDirection}">Wind Direction: </p>
+            <p th:text="${response.pressure}">Pressure: </p>
+            <p th:text="${response.conditions}">Weather Condition: </p>
+            <p th:text="${response.description}">Weather Description: </p>
+            <p th:text="${response.sunrise}">Sunrise: </p>
+            <p th:text="${response.sunset}">Sunset: </p>
+          </div>
+          <div class="weather-control">
+            <div class="button-group">
+              <button type="button" class="btn-control-skip" id="btn-control-prev">Prev</button>
+              <button type="button" class="btn-control-skip" id="btn-control-next">Next</button>
+            </div>
+          </div>
         </div>
       </section>
     </div>
