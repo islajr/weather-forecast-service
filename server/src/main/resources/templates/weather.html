@@ -17,20 +17,20 @@
       <section id="weather-information" th:if="${type == 'currentWeather'}">
         <div class="weather-information-container">
           <div class="city-information">
-            <p><strong class="city-information-text">City: </strong></p><p class="city-information-text" th:text="${response.city}">City</p>
-            <p><strong class="city-information-text">Country: </strong></p><p class="city-information-text" th:text="${response.country}">Country: </p>
+            <p class="city-information-text">City: </p><p class="city-information-text" th:text="${response.city}">City</p>
+            <p class="city-information-text">Country: </p><p class="city-information-text" th:text="${response.country}">Country</p>
           </div>
           <div class="weather-information">
-            <p th:text="${response.temperature}">Temperature: </p>
-            <p th:tet="${response.humidity}">Humidity: </p>
-            <p th:text="${response.timestamp}">Timestamp: </p>
-            <p th:text="${response.windSpeed}">Wind Speed: </p>
-            <p th:text="${response.windDirection}">Wind Direction: </p>
-            <p th:text="${response.pressure}">Pressure: </p>
-            <p th:text="${response.conditions}">Weather Condition: </p>
-            <p th:text="${response.description}">Weather Description: </p>
-            <p th:text="${response.sunrise}">Sunrise: </p>
-            <p th:text="${response.sunset}">Sunset: </p>
+            <p>Temperature: <span th:text="${response.temperature}"></span></p>
+            <p> Humidity: <span th:text="${response.humidity}"></span></p>
+            <p> Timestamp: <span th:text="${response.timestamp}"></span></p>
+            <p> Wind Speed: <span th:text="${response.windSpeed}"></span></p>
+            <p> Wind Direction: <span th:text="${response.windDirection}"></span></p>
+            <p> Pressure: <span th:text="${response.pressure}"></span></p>
+            <p> Weather Condition: <span th:text="${response.conditions}"></span></p>
+            <p> Weather Description: <span th:text="${response.description}"></span></p>
+            <p> Sunrise: <span  th:text="${response.sunrise}"></span></p>
+            <p> Sunset: <span th:text="${response.sunset}"></span></p>
           </div>
         </div>
       </section>
@@ -41,16 +41,16 @@
             <p><strong class="city-information-text">Country: </strong></p><p class="city-information-text" th:text="${response.country}">Country: </p>
           </div>
           <div class="weather-information">
-            <p th:text="${response.temperature}">Temperature: </p>
-            <p th:tet="${response.humidity}">Humidity: </p>
-            <p th:text="${response.timestamp}">Timestamp: </p>
-            <p th:text="${response.windSpeed}">Wind Speed: </p>
-            <p th:text="${response.windDirection}">Wind Direction: </p>
-            <p th:text="${response.pressure}">Pressure: </p>
-            <p th:text="${response.conditions}">Weather Condition: </p>
-            <p th:text="${response.description}">Weather Description: </p>
-            <p th:text="${response.sunrise}">Sunrise: </p>
-            <p th:text="${response.sunset}">Sunset: </p>
+            <p>Temperature: <span th:text="${response.temperature}"></span></p>
+            <p> Humidity: <span th:text="${response.humidity}"></span></p>
+            <p> Timestamp: <span th:text="${response.timestamp}"></span></p>
+            <p> Wind Speed: <span th:text="${response.windSpeed}"></span></p>
+            <p> Wind Direction: <span th:text="${response.windDirection}"></span></p>
+            <p> Pressure: <span th:text="${response.pressure}"></span></p>
+            <p> Weather Condition: <span th:text="${response.conditions}"></span></p>
+            <p> Weather Description: <span th:text="${response.description}"></span></p>
+            <p> Sunrise: <span  th:text="${response.sunrise}"></span></p>
+            <p> Sunset: <span th:text="${response.sunset}"></span></p>
           </div>
           <div class="weather-control">
             <div class="button-group">

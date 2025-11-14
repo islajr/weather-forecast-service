@@ -66,6 +66,8 @@ button:hover {
 
 .city-information-text {
     text-align: center;
+    align-self: center;
+    font-weight: bold;
 }
 
 .weather-information {
@@ -78,3 +80,13 @@ button:hover {
     align-items: center;
     width: 100%;
 }
+
+.city-information-text > span {
+    font-weight: bold;
+}
+
+.weather-information > p > span {
+    font-weight: bold;
+}
+
+
